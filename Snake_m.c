@@ -12,6 +12,12 @@
 
 #define SCREEN_WIDTH 264
 #define SCREEN_HEIGHT 700
+#define OFF 0
+#define ON 1
+#define LEFT 2
+#define RIGHT 3
+#define UP 4
+#define BOTTOM 5
 
 //Configuração das portas de acordo com o padrão do display
 char GLCD_DataPort at PORTC;
@@ -41,15 +47,15 @@ unsigned char snake_s = 5;                          // Valor padrão do tamanho 
 unsigned char ind;
 
 void reset_snake () {
-    posX = rand() / SCREEN_WIDTH + 1;    
-    posY = rand() / SCREEN_HEIGHT + 1;
+    posX = rand () / SCREEN_WIDTH + 1;    
+    posY = rand () / SCREEN_HEIGHT + 1;
 }
 
 //Gera um ponto na tela jogável para servir de comida
 void generate_food () {
     short x;
-    food[0] = rand() / SCREEN_WIDTH + 1;
-    food[1] = rand() / SCREEN_HEIGHT + 1;       
+    food[0] = rand () / SCREEN_WIDTH + 1;
+    food[1] = rand () / SCREEN_HEIGHT + 1;       
     Glcd_Dot (food[0], food[1], 1);             
 }
 
@@ -60,22 +66,69 @@ void game_over () {
     score = 0;
     txt_score[8] = '0';
     direction = 2;
-    Glcd_Fill(0xFF);
-    Glcd_Write_Text("FIM DE JOGO !!!", 25, 3, 0);
-    delay_ms(600);
+    Glcd_Fill (0xFF);
+    Glcd_Write_Text ("FIM DE JOGO !!!", 25, 3, 0);
+    delay_ms (600);
+
+    initiate_screen (); //Começa o jogo de novo
+}
+
+void initiate_screen () {
+
+    //Nome inicial
+    Glcd_Fill (0xFF);    //Cor preta
+    Glcd_Write_Text ("SNAKE GAME", 25, 3, 0);
+    delay_ms (1000);
+
+    //Jogo inicia
+    Glcd_Fill (0x00);    //Cor branca
+    generate_food ();
+
+    Glcd_Write_Text (txt_score, 0, 7, 1);
 }
 
 int main () {
+
     TRISD = 255;
-    Glcd_Init();
+    Glcd_Init ();   //Função do display para configuração interna
 
-    //Nome inicial
-    Glcd_Fill(0xFF);
-    Glcd_Write_Text("SNAKE GAME", 25, 3, 0);
-    delay_ms(1000);
+    initiate_screen ();
 
-    //Jogo inicia
-    Glcd_Fill(0x00);
-    generate_food();
+    while (snake_s <= 30) {
+        
+        if (PORTD.F4 == ON) { game_over (); break; }    //Botão de reset foi pressionado
 
+        if (PORTD.F3 == ON) direction = LEFT;
+        if (PORTD.F2 == ON) direction = UP;
+        if (PORTD.F1 == ON) direction = BOTTOM;
+        if (PORTD.F0 == ON) direction = RIGHT;
+
+        switch (direction) {
+        
+            case LEFT:
+                posX++;
+                if (posX > 126) { game_over(); break;}
+                snake [snake_s - 1][1] = posY;
+                
+                break;
+            
+            case UP:
+        
+                break;
+
+            case BOTTOM:
+        
+                break;
+
+            case RIGHT:
+        
+                break;
+
+            default:
+                break;
+            }
+        
+    }
+
+    return 0;
 }
