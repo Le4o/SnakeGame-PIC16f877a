@@ -19,6 +19,7 @@
 #define UP 4
 #define BOTTOM 5
 
+extern sfr
 //Configuração das portas de acordo com o padrão do display
 char GLCD_DataPort at PORTC;
 
@@ -27,7 +28,7 @@ sbit GLCD_CS2 at RB1_bit;
 sbit GLCD_RS  at RB2_bit;
 sbit GLCD_RW  at RB3_bit;
 sbit GLCD_EN  at RB4_bit;
-sbit GLCD_RST at RB5_bit;
+sbit GLCD_RST at RB5_bit;   
 
 sbit GLCD_CS1_Direction at TRISB0_bit;
 sbit GLCD_CS2_Direction at TRISB1_bit;
@@ -44,7 +45,6 @@ unsigned char posX;                                 // Snake começa em uma posi
 unsigned char posY;                                 //
 unsigned char score, *txt_score = "Pontos: 00";     // Texto para display
 unsigned char snake_s = 5;                          // Valor padrão do tamanho da cauda
-unsigned char ind;
 
 void reset_snake () {
     posX = rand () / SCREEN_WIDTH + 1;    
@@ -84,6 +84,24 @@ void initiate_screen () {
     Glcd_Fill (0x00);    //Cor branca
     generate_food ();
 
+    //Desenha a cobra inicial
+    int x;
+    for (x = 0; x < 5; x++) {
+        Glcd_Dot (x, 0, 1);
+    }
+    
+
+    Glcd_Write_Text (txt_score, 0, 7, 1);
+}
+
+void snake_eat () {
+    snake_s++;
+    generate_food ();
+    score++;
+
+    //Escreve o texto de score
+    txt_score[7] = score/10 + 48;
+    txt_score[8] = score%10 + 48;
     Glcd_Write_Text (txt_score, 0, 7, 1);
 }
 
@@ -103,32 +121,77 @@ int main () {
         if (PORTD.F1 == ON) direction = BOTTOM;
         if (PORTD.F0 == ON) direction = RIGHT;
 
+        int i = 0;                                      
         switch (direction) {
         
             case LEFT:
-                posX++;
+                posX--;
                 if (posX > 126) { game_over(); break;}
                 snake [snake_s - 1][1] = posY;
-                
+                snake [snake_s - 1][0] = posX;
+                for (i = 0; i < snake_s - 1; i++) {
+                    snake [i][1] = snake [i+1][1];
+                    snake [i][0] = snake [i+1][0]
+                }
                 break;
             
             case UP:
-        
+                posY--;
+                if (posY < 1) { game_over(); break; }
+                snake [snake_s - 1][1] = posY;
+                snake [snake_s - 1][0] = posX;
+                for (i = 0; i < snake_s - 1; i++) {
+                    snake [i][1] = snake [i+1][1];
+                    snake [i][0] = snake [i+1][0]
+                }
                 break;
 
             case BOTTOM:
-        
+                posX++;
+                if (posX > 126) { game_over(); break;}
+                snake [snake_s - 1][1] = posY;
+                snake [snake_s - 1][0] = posX;
+                for (i = 0; i < snake_s - 1; i++) {
+                    snake [i][0] = snake [i+1][0];
+                    snake [i][1] = snake [i+1][1]
+                }
                 break;
 
             case RIGHT:
-        
+                posX++;
+                if (posX > 126) { game_over(); break; }
+                snake [snake_s - 1][1] = posY;
+                snake [snake_s - 1][0] = posX;
+                for (i = 0; i < snake_s - 1; i++) {
+                    snake [i][1] = snake [i+1][i];
+                    snake [i][1] = snake [i+1][0]
+                }
                 break;
 
             default:
                 break;
             }
-        
+            
+            //Desenha a snake
+            for (i = 0; i < snake_s; i++) {
+                Glcd_Dot (snake [i][0], snake [i][1], 1);
+            }
+
+            Glcd_Dot (snake[0][0], snake [0][1], 0);
+
+            if (posX == food [0] && posY == food [1]) {
+                snake_eat ();
+            } 
     }
+    //Jogador completa 30 pontos
+    snake_s = 5;
+    posX = 1;
+    posY = 1;
+    score = 0;
+    direction = 2;
+    Glcd_Fill (0xFF);
+    Glcd_Write_Text("VOCÊ VENCEU !!!", 25, 3, 0);
+    delay_ms(2500);
 
     return 0;
 }
