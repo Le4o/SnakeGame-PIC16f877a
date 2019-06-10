@@ -48,6 +48,7 @@ uchar food[2], snake_s = 5;
 uchar posX = 5, posY = 5;
 uchar score, *score_txt = "Score: 00";
 uchar i;
+uchar before_direction;
 unsigned int speed = 200;
 
 //Fun��o para resetar a cobr em uma posi��o aleat�ria do display
@@ -76,7 +77,7 @@ void initiate_screen(){
      endgame = 0;
 }
 
-//Fun��o que � chamada quando o player perde
+//Função que � chamada quando o player perde
 //Reseta todos os atributos e printa na tela a mensagem de derrota
 void game_over(){
      snake_s = 5;
@@ -130,10 +131,10 @@ int main() {
 
         if (PORTD.F4 == ON) { game_over (); break; }    //Bot�o de reset foi pressionado
 
-        if (PORTD.F3 == ON) direction = LEFT;
-        if (PORTD.F2 == ON) direction = UP;
-        if (PORTD.F1 == ON) direction = BOTTOM;
-        if (PORTD.F0 == ON) direction = RIGHT;
+        if (PORTD.F3 == ON) { before_direction = direction; direction = LEFT;}
+        if (PORTD.F2 == ON) { before_direction = direction; direction = UP;}
+        if (PORTD.F1 == ON) { before_direction = direction; direction = RIGHT;}
+        if (PORTD.F0 == ON) { before_direction = direction; direction = BOTTOM;}
         
         speed_test(speed);  //Calcula a velocidade da cobra
 
@@ -142,7 +143,7 @@ int main() {
             //Dire��o para esquerda
             case LEFT:
                 posX--;
-                if (posX < 1) { game_over(); break;}
+                if (before_direction == RIGHT || posX < 1) { game_over(); break; }
                 snake [snake_s - 1][1] = posY;
                 snake [snake_s - 1][0] = posX;
                 for (i = 0; i < snake_s - 1; i++) {
@@ -154,7 +155,7 @@ int main() {
             //Dire��o para cima
             case UP:
                 posY--;
-                if (posY < 1) { game_over(); break; }
+                if (before_direction == BOTTOM || posY < 1) { game_over(); break; }
                 snake [snake_s - 1][1] = posY;
                 snake [snake_s - 1][0] = posX;
                 for (i = 0; i < snake_s - 1; i++) {
@@ -165,8 +166,8 @@ int main() {
 
             //Dire��o para baixo
             case BOTTOM:
-                posX++;
-                if (posX > 126) { game_over(); break;}
+                 posX++;
+                if (before_direction == UP || posX > 126) { game_over(); break; }
                 snake [snake_s - 1][1] = posY;
                 snake [snake_s - 1][0] = posX;
                 for (i = 0; i < snake_s - 1; i++) {
@@ -177,8 +178,8 @@ int main() {
                 
             //Dire�ao para direita
             case RIGHT:
-                posY++;
-                if (posY > 49) { game_over(); break; }
+                 posY++;
+                if (before_direction == LEFT || posY > 49) { game_over(); break; }
                 snake [snake_s - 1][1] = posY;
                 snake [snake_s - 1][0] = posX;
                 for (i = 0; i < snake_s - 1; i++) {
