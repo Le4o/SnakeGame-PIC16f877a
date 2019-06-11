@@ -59,6 +59,7 @@ bclie
 bclie_bit
 bclif
 bclif_bit
+before_direction
 bf
 bf_bit
 boot16_delay_5ms
@@ -407,6 +408,8 @@ pie1
 pie2
 pir1
 pir2
+points
+points_label
 port_to_tris_offset
 porta
 portb
@@ -557,8 +560,6 @@ rx9d
 rx9d_bit
 s
 s_bit
-score
-score_txt
 sdiv3232l
 sen
 sen_bit

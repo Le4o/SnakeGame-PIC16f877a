@@ -1,5 +1,5 @@
-#line 1 "C:/Users/junin/Desktop/SnakeGame/Snake.c"
-#line 25 "C:/Users/junin/Desktop/SnakeGame/Snake.c"
+#line 1 "C:/Users/junin/Desktop/Minha Cobra/SnakeGame/Snake.c"
+#line 23 "C:/Users/junin/Desktop/Minha Cobra/SnakeGame/Snake.c"
 char GLCD_DataPort at PORTC;
 
 sbit GLCD_CS1 at RB0_bit;
@@ -18,14 +18,14 @@ sbit GLCD_RST_Direction at TRISB5_bit;
 
 
 
-
- unsigned char  direction = 3;
- unsigned char  SNAKE[40][2];
- unsigned char  endgame= 0;
- unsigned char  food[2], snake_s = 5;
- unsigned char  posX = 5, posY = 5;
- unsigned char  score, *score_txt = "Score: 00";
- unsigned char  i;
+unsigned char direction =  3 ;
+unsigned char SNAKE[35][2];
+unsigned char endgame= 0;
+unsigned char food[2], snake_s = 5;
+unsigned char posX = 5, posY = 5;
+unsigned char points, *points_label = "Pontos:00";
+unsigned char i;
+unsigned char before_direction;
 unsigned int speed = 200;
 
 
@@ -59,9 +59,9 @@ void initiate_screen(){
 void game_over(){
  snake_s = 5;
  reset_snake();
- score = 0;
- score_txt[8] = '0';
- direction = 3;
+ points = 0;
+ points_label[8] = '0';
+ direction =  3 ;
  Glcd_Fill(0xFF);
  Glcd_Write_Text("FIM DE JOGO !!!", 25, 3, 0);
  delay_ms(2000);
@@ -85,11 +85,11 @@ void speed_test(unsigned int milliseconds)
 void snake_eat(){
  snake_s++;
  generate_food();
- score++;
+ points++;
 
- score_txt[7] = score / 10 + 48;
- score_txt[8] = score % 10 + 48;
- Glcd_Write_Text( score_txt, 70, 7, 1 );
+ points_label[7] = points / 10 + 48;
+ points_label[8] = points % 10 + 48;
+ Glcd_Write_Text( points_label, 70, 7, 1 );
  speed -= 5;
 }
 
@@ -99,19 +99,19 @@ int main() {
  TRISD = 255;
  Glcd_Init ();
 
- Init:
+ BEGIN:
  speed = 200;
  initiate_screen ();
  Glcd_Rectangle(0,0,127,50, 1);
  snake_s = 5;
  while (snake_s <= 30 && !endgame) {
 
- if (PORTD.F4 ==  1 ) { game_over (); break; }
+ if (PORTD.F4 ==  1 ) { game_over (); goto BEGIN; }
 
- if (PORTD.F3 ==  1 ) direction =  2 ;
- if (PORTD.F2 ==  1 ) direction =  4 ;
- if (PORTD.F1 ==  1 ) direction =  5 ;
- if (PORTD.F0 ==  1 ) direction =  3 ;
+ if (PORTD.F3 ==  1 ) { direction =  2 ;}
+ if (PORTD.F2 ==  1 ) { direction =  4 ;}
+ if (PORTD.F1 ==  1 ) { direction =  3 ;}
+ if (PORTD.F0 ==  1 ) { direction =  5 ;}
 
  speed_test(speed);
 
@@ -120,49 +120,53 @@ int main() {
 
  case  2 :
  posX--;
- if (posX < 1) { game_over(); break;}
+ if ( before_direction ==  3  || posX < 1) { game_over(); break; }
  snake [snake_s - 1][1] = posY;
  snake [snake_s - 1][0] = posX;
  for (i = 0; i < snake_s - 1; i++) {
  snake [i][1] = snake [i+1][1];
  snake [i][0] = snake [i+1][0];
  }
+ before_direction = direction;
  break;
 
 
  case  4 :
  posY--;
- if (posY < 1) { game_over(); break; }
+ if ( before_direction ==  5  || posY < 1) { game_over(); break; }
  snake [snake_s - 1][1] = posY;
  snake [snake_s - 1][0] = posX;
  for (i = 0; i < snake_s - 1; i++) {
  snake [i][1] = snake [i+1][1];
  snake [i][0] = snake [i+1][0];
  }
+ before_direction = direction;
  break;
 
 
  case  5 :
- posX++;
- if (posX > 126) { game_over(); break;}
+ posY++;
+ if (before_direction ==  4  || posY > 49) { game_over(); break; }
  snake [snake_s - 1][1] = posY;
  snake [snake_s - 1][0] = posX;
  for (i = 0; i < snake_s - 1; i++) {
- snake [i][0] = snake [i+1][0];
  snake [i][1] = snake [i+1][1];
+ snake [i][0] = snake [i+1][0];
  }
+ before_direction = direction;
  break;
 
 
  case  3 :
- posY++;
- if (posY > 49) { game_over(); break; }
+ posX++;
+ if (before_direction ==  2  || posX > 126) { game_over(); break; }
  snake [snake_s - 1][1] = posY;
  snake [snake_s - 1][0] = posX;
  for (i = 0; i < snake_s - 1; i++) {
- snake [i][1] = snake [i+1][1];
  snake [i][0] = snake [i+1][0];
+ snake [i][1] = snake [i+1][1];
  }
+ before_direction = direction;
  break;
 
  default:
@@ -183,17 +187,17 @@ int main() {
  }
 
  }
- else goto Init;
+ else goto BEGIN;
 
  }
 
  snake_s = 5;
  posX = 1;
  posY = 1;
- score = 0;
- direction = 3;
+ points = 0;
+ direction =  3 ;
  Glcd_Fill (0xFF);
- Glcd_Write_Text("VOCÊ VENCEU !!!", 25, 3, 0);
+ Glcd_Write_Text("VOC? VENCEU !!!", 25, 3, 0);
  delay_ms(2500);
 
  return 0;
